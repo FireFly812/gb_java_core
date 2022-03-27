@@ -16,8 +16,8 @@ public class UserInterface {
             setGlobalCity(city);
 
             System.out.println("Введите ответ: 1 - Получить текущую погоду, " +
-                "2 - Получить погоду на следующие 5 дней, " +
-                "выход (exit) - завершить работу");
+                    "2 - Получить погоду на следующие 5 дней, " + "3 - Получить погоду на дату, " +
+                    "выход (exit) - завершить работу");
             String result = scanner.nextLine();
 
             checkIsExit(result);
@@ -48,7 +48,6 @@ public class UserInterface {
     private void setGlobalCity(String city) {
         ApplicationGlobalState.getInstance().setSelectedCity(city);
     }
-
 
     private void validateUserInput(String userInput) throws IOException {
         if (userInput == null || userInput.length() != 1) {
