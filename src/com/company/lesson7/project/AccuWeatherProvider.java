@@ -11,6 +11,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -81,6 +82,12 @@ public class AccuWeatherProvider implements WeatherProvider {
             //System.out.println(jsonResponse);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(jsonResponse);
+            DatabaseRepository prepareDB = new DatabaseRepository();
+            try {
+                prepareDB.initDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             for (int i = 0; i < 5; i++) {
                 String dateS = root.get("DailyForecasts").get(i).at("/Date").textValue();
                 try {
@@ -89,20 +96,32 @@ public class AccuWeatherProvider implements WeatherProvider {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String temperatureMin = root.get("DailyForecasts").get(i).get("Temperature").get("Minimum").get("Value")
-                        .asText();
-                String temperatureMax = root.get("DailyForecasts").get(i).get("Temperature").get("Maximum").get("Value")
-                        .asText();
                 String unit = root.get("DailyForecasts").get(i).get("Temperature").get("Minimum").get("Unit")
                         .textValue();
+                String temperatureMin =
+                        (root.get("DailyForecasts").get(i).get("Temperature").get("Minimum").get("Value")
+                                .asText()) + unit;
+                String temperatureMax =
+                        (root.get("DailyForecasts").get(i).get("Temperature").get("Maximum").get("Value")
+                                .asText()) + unit;
+
                 String daytimeWeather = root.get("DailyForecasts").get(i).at("/Day/IconPhrase").asText();
                 String weatherAtNight = root.get("DailyForecasts").get(i).at("/Night/IconPhrase").asText();
+                try {
+                    prepareDB.performPreparedStatement(dateS, temperatureMin, temperatureMax, daytimeWeather,
+                            weatherAtNight);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+             /*
                 System.out.println(
                         "В городе " + cityName + " на " + dateS + " минимальная температура воздуха: " + temperatureMin
                                 + unit + ", максимальная температура воздуха: " + temperatureMax + unit + ", днем: "
                                 + daytimeWeather + ", ночью: " + weatherAtNight);
-            }
 
+              */
+            }
         }
     }
 
